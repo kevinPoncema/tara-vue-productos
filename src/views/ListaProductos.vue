@@ -1,7 +1,14 @@
 <template>
   <div class="container mt-4">
     <h1 class="text-center mb-4">Lista de Productos</h1>
-    <div class="row">
+    
+    <!-- Mostrar mensaje de cargando si aún no se ha recibido la respuesta de la API -->
+    <div v-if="isLoading" class="text-center">
+      <p>Cargando productos...</p>
+    </div>
+
+    <!-- Mostrar productos una vez que estén cargados -->
+    <div v-else class="row">
       <div
         class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3"
         v-for="product in products"
@@ -28,6 +35,7 @@ export default {
   name: 'ListaProductos',
   setup() {
     const products = ref([]);
+    const isLoading = ref(true); // Estado de carga
 
     const fetchProducts = async () => {
       try {
@@ -36,6 +44,8 @@ export default {
         products.value = data;
       } catch (error) {
         console.error('Error fetching products:', error);
+      } finally {
+        isLoading.value = false; // Cambiar el estado de carga cuando los productos estén listos
       }
     };
 
@@ -45,6 +55,7 @@ export default {
 
     return {
       products,
+      isLoading, // Retorna el estado de carga para usarlo en el template
     };
   },
 };
