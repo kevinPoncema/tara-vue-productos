@@ -1,26 +1,24 @@
 <template>
-  <div class="container mt-4">
-    <h1 class="text-center mb-4">Lista de Productos</h1>
+  <div>
+    <h1>Lista de Productos</h1>
+    <h2 class="slogan">Encuentra lo mejor en nuestra tienda online</h2>
     
-    <!-- Mostrar mensaje de cargando si aún no se ha recibido la respuesta de la API -->
-    <div v-if="isLoading" class="text-center">
-      <p>Cargando productos...</p>
+    <!-- Mostrar 'Cargando...' hasta que se obtenga la respuesta del API -->
+    <div v-if="loading" class="loading">
+      <p>Cargando...</p>
     </div>
 
-    <!-- Mostrar productos una vez que estén cargados -->
-    <div v-else class="row">
-      <div
-        class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3"
-        v-for="product in products"
-        :key="product.id"
-      >
-        <div class="card h-100">
-          <img :src="product.image" class="card-img-top" alt="product.title" />
-          <div class="card-body">
-            <h5 class="card-title">{{ product.title }}</h5>
-            <p class="card-text">{{ product.description }}</p>
-            <p class="card-text"><strong>Precio: ${{ product.price }}</strong></p>
-            <p class="card-text">Rating: {{ product.rating.rate }} ({{ product.rating.count }} reviews)</p>
+    <!-- Mostrar la lista de productos cuando se obtienen los datos -->
+    <div v-else class="product-list">
+      <div v-for="product in products" :key="product.id" class="product-card">
+        <img :src="product.image" class="product-image" alt="Product Image">
+        <div class="product-details">
+          <h3>{{ product.title }}</h3>
+          <p class="price">$ {{ product.price }}</p>
+          <p>{{ product.description }}</p>
+          <p>Category: {{ product.category }}</p>
+          <div class="rating">
+            Rating: {{ product.rating.rate }} ({{ product.rating.count }} reviews)
           </div>
         </div>
       </div>
@@ -32,38 +30,93 @@
 import { ref, onMounted } from 'vue';
 
 export default {
-  name: 'ListaProductos',
+  name: 'ProductosLista',
   setup() {
     const products = ref([]);
-    const isLoading = ref(true); // Estado de carga
+    const loading = ref(true); // Variable para mostrar el estado de carga
 
     const fetchProducts = async () => {
       try {
         const response = await fetch('https://fakestoreapi.com/products');
-        const data = await response.json();
-        products.value = data;
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        products.value = await response.json();
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {
-        isLoading.value = false; // Cambiar el estado de carga cuando los productos estén listos
+        loading.value = false; // Se oculta el mensaje de carga cuando la petición finaliza
       }
     };
 
-    onMounted(() => {
-      fetchProducts();
-    });
+    onMounted(fetchProducts);
 
     return {
       products,
-      isLoading, // Retorna el estado de carga para usarlo en el template
+      loading
     };
-  },
+  }
 };
 </script>
 
 <style scoped>
-.card-img-top {
-  height: 150px;
-  object-fit: contain;
+.product-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.product-card {
+  width: 300px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.product-image {
+  width: 100%;
+  border-radius: 5px;
+}
+
+.product-details {
+  margin-top: 10px;
+}
+
+.price {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.rating {
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.5em;
+  color: #555;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2.5em;
+  color: #333;
+}
+
+.slogan {
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 1.8em;
+  color: #555;
 }
 </style>
